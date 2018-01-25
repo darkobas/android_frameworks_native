@@ -152,6 +152,7 @@ Error Device::createVirtualDisplay(uint32_t width, uint32_t height,
     *outDisplay = display.get();
     *format = static_cast<android_pixel_format_t>(intFormat);
     mDisplays.emplace(displayId, std::move(display));
+    mComposer->setClientTargetSlotCount((*outDisplay)->getId());
     ALOGI("Created virtual display");
     return Error::None;
 }
@@ -795,6 +796,23 @@ Error Layer::setCompositionType(Composition type)
     auto intType = static_cast<Hwc2::IComposerClient::Composition>(type);
     auto intError = mComposer.setLayerCompositionType(
             mDisplayId, mId, intType);
+    return static_cast<Error>(intError);
+}
+
+Error Layer::setAnimating(bool enable)
+{
+    if (!enable) {
+        return static_cast<Error> (0);
+    }
+// TODO: value 7 is not present in composition types at hwcomposer2.h
+#ifdef BYPASS_IHWC
+    int32_t intError = mDevice.mSetLayerCompositionType(mDevice.mHwcDevice,
+            mDisplayId, mId, 7);
+#else
+    auto intType = static_cast<Hwc2::IComposerClient::Composition>(7);
+    auto intError = mComposer.setLayerCompositionType(mDisplayId,
+            mId, intType);
+#endif
     return static_cast<Error>(intError);
 }
 

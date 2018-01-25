@@ -124,6 +124,8 @@ public:
 
     void                    setVisibleLayersSortedByZ(const Vector< sp<Layer> >& layers);
     const Vector< sp<Layer> >& getVisibleLayersSortedByZ() const;
+    void                    setLayersNeedingFences(const Vector< sp<Layer> >& layers);
+    const Vector< sp<Layer> >& getLayersNeedingFences() const;
     Region                  getDirtyRegion(bool repaintEverything) const;
 
     void                    setLayerStack(uint32_t stack);
@@ -144,6 +146,10 @@ public:
     bool                    isPrimary() const { return mType == DISPLAY_PRIMARY; }
     int32_t                 getHwcDisplayId() const { return mHwcDisplayId; }
     const wp<IBinder>&      getDisplayToken() const { return mDisplayToken; }
+
+    uint32_t getPanelMountFlip() const {
+        return mPanelMountFlip;
+    }
 
     // We pass in mustRecompose so we can keep VirtualDisplaySurface's state
     // machine happy without actually queueing a buffer if nothing has changed
@@ -241,11 +247,13 @@ private:
 
     // list of visible layers on that display
     Vector< sp<Layer> > mVisibleLayersSortedByZ;
+    // list of layers needing fences
+    Vector< sp<Layer> > mLayersNeedingFences;
 
     /*
      * Transaction state
      */
-    static status_t orientationToTransfrom(int orientation,
+    status_t orientationToTransfrom(int orientation,
             int w, int h, Transform* tr);
 
     // The identifier of the active layer stack for this display. Several displays
@@ -267,6 +275,8 @@ private:
     int mPowerMode;
     // Current active config
     int mActiveConfig;
+    // Panel's mount flip, H, V or 180 (HV)
+    uint32_t mPanelMountFlip;
 #ifdef USE_HWC2
     // current active color mode
     android_color_mode_t mActiveColorMode;

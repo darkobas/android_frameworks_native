@@ -167,6 +167,7 @@ public:
     // This also allows devices with wide-color displays that don't
     // want to support color management to disable color management.
     static bool hasWideColorDisplay;
+    friend class ExSurfaceFlinger;
 
     static char const* getServiceName() ANDROID_API {
         return "SurfaceFlinger";
@@ -200,6 +201,8 @@ public:
         Mutex::Autolock _l(mStateLock);
         return getDefaultDisplayDeviceLocked();
     }
+
+    virtual bool IsHWCDisabled() { return false; }
 
     // utility function to delete a texture on the main thread
     void deleteTextureAsync(uint32_t texture);
@@ -341,6 +344,37 @@ private:
     void onInvalidateReceived(HWComposer* composer) override;
 #endif
 
+    /* ------------------------------------------------------------------------
+     * Extensions
+     */
+    virtual void updateExtendedMode() { }
+
+    virtual void getIndexLOI(size_t /*dpy*/,
+                     bool& /*bIgnoreLayers*/,
+                     String8& /*nameLOI*/) { }
+
+    virtual bool updateLayerVisibleNonTransparentRegion(
+                     const int& dpy, const sp<Layer>& layer,
+                     bool& bIgnoreLayers, String8& nameLOI,
+                     uint32_t layerStack);
+
+    virtual void delayDPTransactionIfNeeded(
+                     const Vector<DisplayState>& /*displays*/) { }
+
+    virtual bool canDrawLayerinScreenShot(
+                     const sp<const DisplayDevice>& hw,
+                     const sp<Layer>& layer);
+
+    virtual void isfreezeSurfacePresent(
+                     bool& freezeSurfacePresent,
+                     const sp<const DisplayDevice>& /*hw*/,
+                     const int32_t& /*id*/) { freezeSurfacePresent = false; }
+
+    virtual void setOrientationEventControl(
+                     bool& /*freezeSurfacePresent*/,
+                     const int32_t& /*id*/) { }
+
+    virtual void updateVisibleRegionsDirty() { }
     /* ------------------------------------------------------------------------
      * Message handling
      */
@@ -607,6 +641,9 @@ private:
     void logFrameStats();
 
     void dumpStaticScreenStats(String8& result) const;
+#ifdef DEBUG_CONT_DUMPSYS
+    virtual void dumpDrawCycle(bool /* prePrepare */ ) { }
+#endif
     // Not const because each Layer needs to query Fences and cache timestamps.
     void dumpFrameEventsLocked(String8& result);
 

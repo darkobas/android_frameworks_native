@@ -323,6 +323,7 @@ public:
             const android::Region& region);
     [[clang::warn_unused_result]] Error setZOrder(uint32_t z);
     [[clang::warn_unused_result]] Error setInfo(uint32_t type, uint32_t appId);
+    [[clang::warn_unused_result]] Error setAnimating(bool animating);
 
 private:
     // These are references to data owned by HWC2::Device, which will outlive
